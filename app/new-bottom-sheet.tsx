@@ -1,9 +1,9 @@
-import BottomSheet, { BottomSheetRefProps } from "@/components/bottom-sheet";
+import BottomSheet2, { BottomSheetRefProps2 } from "@/components/bottom-sheet2";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { Link } from "expo-router";
-import { useCallback, useRef } from "react";
-import { FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
+import { useRef, useState } from "react";
+import { FlatList, LayoutChangeEvent, StyleSheet, View } from "react-native";
+import { useSharedValue } from "react-native-reanimated";
 
 interface Item {
   id: number;
@@ -114,30 +114,42 @@ const fakeData: Item[] = [
   },
 ];
 
-export default function Home() {
-  const ref = useRef<BottomSheetRefProps | null>(null);
+export default function NewBottomSheet() {
+  const animateTranslateY = useSharedValue(0);
+  const maxUpwardTranslateY = 300;
+  const [cardHeight, setCardHeight] = useState(0);
 
-  const onPress = useCallback(() => {
-    const isActive = ref?.current?.isActive();
+  const ref = useRef<BottomSheetRefProps2 | null>(null);
 
-    if (isActive) {
-      ref?.current?.scrollTo(0);
-    } else {
-      ref?.current?.scrollTo(-200);
-    }
-  }, []);
+  const handleLayout = (event: LayoutChangeEvent) => {
+    const { height } = event.nativeEvent.layout;
+    setCardHeight(height);
+  };
 
   return (
-    <ThemedView style={styles.container}>
-      <Link href="/new-bottom-sheet">
-        <ThemedText style={{ marginBottom: 20 }}>New Bottom Sheet</ThemedText>
-      </Link>
+    <ThemedView style={{ flex: 1 }}>
+      <View style={{ height: 120 }}>
+        <View style={{ flex: 1, position: "relative" }}>
+          <View
+            style={{
+              height: 60,
+              paddingVertical: 15,
+              backgroundColor: "#d56f6f",
+            }}
+          ></View>
+          {/* Body */}
+          <View
+            style={{ height: 60, backgroundColor: "#595dd4" }}
+            onLayout={handleLayout}
+          ></View>
+        </View>
+      </View>
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={onPress}
-      ></TouchableOpacity>
-      <BottomSheet ref={ref}>
+      <BottomSheet2
+        ref={ref}
+        maxUpwardTranslation={cardHeight}
+        translateY={animateTranslateY}
+      >
         <View style={styles.bottomSheetContent}>
           <FlatList
             data={fakeData}
@@ -152,15 +164,15 @@ export default function Home() {
                 </View>
               </View>
             )}
-            contentContainerStyle={styles.flatListContent}
+            // contentContainerStyle={styles.flatListContent}
             // showsVerticalScrollIndicator={true}
             // scrollEnabled={true}
             // bounces={true}
             alwaysBounceVertical={true}
-            style={{ flex: 1 }}
+            // style={{ flex: 1 }}
           />
         </View>
-      </BottomSheet>
+      </BottomSheet2>
     </ThemedView>
   );
 }
@@ -180,7 +192,7 @@ const styles = StyleSheet.create({
   },
   bottomSheetContent: {
     flex: 1,
-    paddingBottom: 50,
+    // paddingBottom: 50,
   },
   flatListContent: {
     flexGrow: 1,
